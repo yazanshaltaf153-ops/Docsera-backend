@@ -1,15 +1,14 @@
+# build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
+COPY Docsera/Docsera.csproj ./Docsera.csproj
+RUN dotnet restore Docsera.csproj
+COPY Docsera/. .
+RUN dotnet publish Docsera.csproj -c Release -o /app
 
-COPY *.csproj ./
-RUN dotnet restore
-
-COPY . ./
-RUN dotnet publish -c Release -o /app
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# run
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app .
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
+ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
 ENTRYPOINT ["dotnet", "Docsera.dll"]
